@@ -75,8 +75,10 @@ jaccard_per_day <- rbind(
 jaccard_per_day$dataset <- factor(jaccard_per_day$dataset, levels = c("obs_bc|hmg_obs_bc",
                                                                       "hmg_obs_bc|qc_obs",
                                                                       "qc_obs|obs_bc"))
-jaccard_per_day$enso <- factor(jaccard_per_day$enso)
-
+# jaccard_per_day$enso <- factor(jaccard_per_day$enso)
+jaccard_per_day$enso <- factor(jaccard_per_day$enso,
+                            levels = c("C_Neutral", "C_Nina", "C_Nino", "E_Neutral", "E_Nina", "E_Nino"),
+                            labels = c("C_Neutral", "C_Niña", "C_Niño", "E_Neutral", "E_Niña", "E_Niño"))
 plt1 <- 
   ggplot(data = jaccard_per_day, aes(x = enso, y = jaccard)) +
   geom_violin() +
@@ -121,8 +123,10 @@ size_per_day <- rbind(
 size_per_day$dataset <- factor(size_per_day$dataset, levels = c("obs_bc",
                                                                 "hmg_obs_bc",
                                                                 "qc_obs"))
-size_per_day$enso <- factor(size_per_day$enso)
-
+# size_per_day$enso <- factor(size_per_day$enso)
+size_per_day$enso <- factor(size_per_day$enso,
+                         levels = c("C_Neutral", "C_Nina", "C_Nino", "E_Neutral", "E_Nina", "E_Nino"),
+                         labels = c("C_Neutral", "C_Niña", "C_Niño", "E_Neutral", "E_Niña", "E_Niño"))
 plt2 <- 
   ggplot(data = size_per_day, aes(x = enso, y = nsize)) +
   geom_violin() +
@@ -203,7 +207,15 @@ sat_distr <- rbind(
 sat_distr$dataset <- factor(sat_distr$dataset, levels = c("obs_bc",
                                                           "hmg_obs_bc",
                                                           "qc_obs"))
-sat_distr$enso <- factor(sat_distr$enso)
+# sat_distr$enso <- factor(sat_distr$enso)
+sat_distr$enso <- factor(sat_distr$enso,
+                         levels = c("C_Neutral", "C_Nina", "C_Nino", "E_Neutral", "E_Nina", "E_Nino"),
+                         labels = c("C_Neutral", "C_Niña", "C_Niño", "E_Neutral", "E_Niña", "E_Niño"))
+
+sat_distr$variable <- factor(sat_distr$variable,
+                             levels = c("gsmap", "imerg", "pdirnow"),
+                             labels = c("GSMaP_NRT", "IMERG-Early", "PDIR-Now"))
+
 
 # plt3 <- 
 #   ggplot(sat_distr2, aes(x = enso, y = value, fill = variable)) + 
@@ -262,14 +274,118 @@ plt3 <-
   theme_bw() +
   xlab("") + ylab("frequency (%)") +
   theme(strip.background = element_blank(),
+        # legend.position = "bottom",
+        # legend.box = "horizontal",
+        legend.margin = margin(t = -15),
+        axis.text = element_text(size = 8),
+        axis.title = element_text(size = 9),
+        legend.title = element_text(size = 9),
+        legend.position = "none")
+
+# analogue metrics by satellite
+
+sat_metric_obs_bc <- lapply(
+  seq_along(obs_bc_anlg), function(i) {
+    i_df <- obs_bc_anlg[[i]]
+    i_df$sat <- factor(i_df$sat,
+                       levels = c("gsmap", "imerg", "pdirnow"),
+                       labels = c("GSMaP_NRT", "IMERG-Early", "PDIR-Now"))
+    i_df$enso <- cv_days$type[i]
+    i_df
+  })
+
+sat_metric_obs_bc <- do.call(rbind, sat_metric_obs_bc)
+sat_metric_obs_bc <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_obs_bc)
+sat_metric_obs_bc <- reshape2::melt(sat_metric_obs_bc, c("sat", "enso"))
+
+
+sat_metric_hmg_obs_bc <- lapply(
+  seq_along(obs_bc_anlg), function(i) {
+    i_df <- hmg_obs_bc_anlg[[i]]
+    i_df$sat <- factor(i_df$sat,
+                       levels = c("gsmap", "imerg", "pdirnow"),
+                       labels = c("GSMaP_NRT", "IMERG-Early", "PDIR-Now"))
+    i_df$enso <- cv_days$type[i]
+    i_df
+  })
+
+sat_metric_hmg_obs_bc <- do.call(rbind, sat_metric_hmg_obs_bc)
+sat_metric_hmg_obs_bc <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_hmg_obs_bc)
+sat_metric_hmg_obs_bc <- reshape2::melt(sat_metric_hmg_obs_bc, c("sat", "enso"))
+
+
+sat_metric_qc_obs <- lapply(
+  seq_along(obs_bc_anlg), function(i) {
+    i_df <- qc_obs_anlg[[i]]
+    i_df$sat <- factor(i_df$sat,
+                       levels = c("gsmap", "imerg", "pdirnow"),
+                       labels = c("GSMaP_NRT", "IMERG-Early", "PDIR-Now")
+                       )
+    i_df$enso <- cv_days$type[i]
+    i_df
+  })
+
+sat_metric_qc_obs <- do.call(rbind, sat_metric_qc_obs)
+sat_metric_qc_obs <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_qc_obs)
+sat_metric_qc_obs <- reshape2::melt(sat_metric_qc_obs, c("sat", "enso"))
+
+
+sat_metric_df <- rbind(
+  data.frame(sat_metric_obs_bc, dataset = "obs_bc"),
+  data.frame(sat_metric_hmg_obs_bc, dataset = "hmg_obs_bc"),
+  data.frame(sat_metric_qc_obs, dataset = "qc_obs")
+)
+
+sat_metric_df$dataset <- factor(sat_metric_df$dataset, levels = c("obs_bc",
+                                                          "hmg_obs_bc",
+                                                          "qc_obs"))
+sat_metric_df$enso <- factor(sat_metric_df$enso,
+                             levels = c("C_Neutral", "C_Nina", "C_Nino", "E_Neutral", "E_Nina", "E_Nino"),
+                             labels = c("C_Neutral", "C_Niña", "C_Niño", "E_Neutral", "E_Niña", "E_Niño"))
+
+levels(sat_metric_df$variable) <- c(dr = latex2exp::TeX("\\textit{$d_{r}$}"),
+                                    dr_p90 = latex2exp::TeX("\\textit{$d_{r}^{p90}$}"),
+                                    mcc = latex2exp::TeX("\\textit{$MCC$}"))
+
+plt4 <- 
+  ggplot(sat_metric_df, aes(x = enso, y = value, fill = sat)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  scale_fill_viridis_d(option = "inferno",
+                       begin = 0.2, end = 0.8,
+                       guide = guide_legend("satellite\nproduct",
+                                            nrow = 1,
+                                            byrow = TRUE,
+                                            label.position = "top",
+                                            barheight = .5)
+  ) +
+  facet_grid(variable ~ dataset, scales = "free_y", labeller = label_parsed) +
+  ggh4x::facetted_pos_scales(
+    y = list(
+      variable == "italic(d[r])" ~ scale_y_continuous(limits = c(0.55, 0.7)),
+      variable == "italic(d[r]^{\n    p90\n})" ~ scale_y_continuous(limits = c(0.3, .45)),
+      variable == "italic(MCC)" ~  scale_y_continuous(limits = c(0.165, .35))
+    )
+  ) +
+  theme_bw() +
+  scale_x_discrete(labels= gsub("_", "\n", levels(factor(sat_metric_df$enso)))) +
+  xlab("") + ylab("analogue metrics") +
+  theme(strip.background = element_blank(),
         legend.position = "bottom",
         legend.box = "horizontal",
         legend.margin = margin(t = -15),
         axis.text = element_text(size = 8),
         axis.title = element_text(size = 9),
         legend.title = element_text(size = 9))
+  
 
-(plt1 + plt2 + plt3 + plot_layout(ncol = 1, axes = "collect_x")) + 
+no_x <- theme(
+  axis.text.x = element_blank(),
+  axis.title.x = element_blank(),
+  axis.ticks.x = element_blank()
+)
+
+((plt1 + no_x) + (plt2 + no_x) + (plt3 + no_x) + plt4 + 
+    plot_layout(ncol = 1, axes = "collect_x", heights = c(1, 1, 1, 1.75))) + 
   plot_annotation(tag_levels = 'a', tag_suffix = ")") & 
   theme(plot.tag = element_text(size = 9),
         plot.tag.position  = c(0, 1))
@@ -278,7 +394,7 @@ ggsave(
   "output/03_precipitation-pattern-analogue/ANLGs_metrics.pdf",
   units = "in",
   width = 5.25,
-  height = 3.75,
+  height = 4.75,
   dpi = 300,
   scale = 1.45
 )
