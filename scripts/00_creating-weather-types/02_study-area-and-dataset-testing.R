@@ -44,6 +44,8 @@ pltt1 <-
                                          barwidth = .6,
                                          nrow = 1
                                         )) +
+  annotate("rect", xmin = -81.5, xmax = -65, ymin = -20, ymax = 2, 
+           alpha = 0.2, fill = NA, color = "black", linewidth = 0.45, linetype = "dotted") +
   xlab("") + ylab("") +
   theme_bw() + 
   theme(
@@ -69,7 +71,7 @@ wetday_p <- parallel::mclapply(
     sample_ts <- sample_ts[!is.na(sample_ts)]
     100 * round(length(sample_ts[sample_ts >= 0.1]) / length(sample_ts), 2)
   },
-  mc.cores = 100
+  mc.cores = 1
 )
 
 pr_xyz$wet_p <- round(as.numeric(wetday_p), 2)
@@ -97,6 +99,8 @@ pltt12 <-
                                            order = 1,
                                            nrow = 1
                       )) +
+  annotate("rect", xmin = -81.5, xmax = -65, ymin = -20, ymax = 2, 
+           alpha = 0.2, fill = NA, color = "black", linewidth = 0.45, linetype = "dotted") +
   xlab("") + ylab("") +
   theme_bw() + 
   theme(
