@@ -295,9 +295,19 @@ sat_metric_obs_bc <- lapply(
   })
 
 sat_metric_obs_bc <- do.call(rbind, sat_metric_obs_bc)
-sat_metric_obs_bc <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_obs_bc)
-sat_metric_obs_bc <- reshape2::melt(sat_metric_obs_bc, c("sat", "enso"))
 
+sat_metric_obs_bc_mean <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_obs_bc)
+sat_metric_obs_bc_mean <- reshape2::melt(sat_metric_obs_bc_mean, c("sat", "enso"))
+sat_metric_obs_bc_mean$p25 <- unlist(
+  reshape2::melt(
+    aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, data = sat_metric_obs_bc, function(x) quantile(x, 0.25)),
+    c("sat", "enso"))["value"]
+)
+sat_metric_obs_bc_mean$p75 <- unlist(
+  reshape2::melt(
+    aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, data = sat_metric_obs_bc, function(x) quantile(x, 0.75)),
+    c("sat", "enso"))["value"]
+)
 
 sat_metric_hmg_obs_bc <- lapply(
   seq_along(obs_bc_anlg), function(i) {
@@ -310,8 +320,19 @@ sat_metric_hmg_obs_bc <- lapply(
   })
 
 sat_metric_hmg_obs_bc <- do.call(rbind, sat_metric_hmg_obs_bc)
-sat_metric_hmg_obs_bc <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_hmg_obs_bc)
-sat_metric_hmg_obs_bc <- reshape2::melt(sat_metric_hmg_obs_bc, c("sat", "enso"))
+
+sat_metric_hmg_obs_bc_mean <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_hmg_obs_bc)
+sat_metric_hmg_obs_bc_mean <- reshape2::melt(sat_metric_hmg_obs_bc_mean, c("sat", "enso"))
+sat_metric_hmg_obs_bc_mean$p25 <- unlist(
+  reshape2::melt(
+    aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, data = sat_metric_hmg_obs_bc, function(x) quantile(x, 0.25)),
+    c("sat", "enso"))["value"]
+)
+sat_metric_hmg_obs_bc_mean$p75 <- unlist(
+  reshape2::melt(
+    aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, data = sat_metric_hmg_obs_bc, function(x) quantile(x, 0.75)),
+    c("sat", "enso"))["value"]
+)
 
 
 sat_metric_qc_obs <- lapply(
@@ -326,14 +347,25 @@ sat_metric_qc_obs <- lapply(
   })
 
 sat_metric_qc_obs <- do.call(rbind, sat_metric_qc_obs)
-sat_metric_qc_obs <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_qc_obs)
-sat_metric_qc_obs <- reshape2::melt(sat_metric_qc_obs, c("sat", "enso"))
+
+sat_metric_qc_obs_mean <- aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, median, data = sat_metric_qc_obs)
+sat_metric_qc_obs_mean <- reshape2::melt(sat_metric_qc_obs_mean, c("sat", "enso"))
+sat_metric_qc_obs_mean$p25 <- unlist(
+  reshape2::melt(
+    aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, data = sat_metric_qc_obs, function(x) quantile(x, 0.25)),
+    c("sat", "enso"))["value"]
+)
+sat_metric_qc_obs_mean$p75 <- unlist(
+  reshape2::melt(
+    aggregate(cbind(dr, dr_p90, mcc) ~ sat + enso, data = sat_metric_qc_obs, function(x) quantile(x, 0.75)),
+    c("sat", "enso"))["value"]
+)
 
 
 sat_metric_df <- rbind(
-  data.frame(sat_metric_obs_bc, dataset = "obs_bc"),
-  data.frame(sat_metric_hmg_obs_bc, dataset = "hmg_obs_bc"),
-  data.frame(sat_metric_qc_obs, dataset = "qc_obs")
+  data.frame(sat_metric_obs_bc_mean, dataset = "obs_bc"),
+  data.frame(sat_metric_hmg_obs_bc_mean, dataset = "hmg_obs_bc"),
+  data.frame(sat_metric_qc_obs_mean, dataset = "qc_obs")
 )
 
 sat_metric_df$dataset <- factor(sat_metric_df$dataset, levels = c("obs_bc",
@@ -358,12 +390,14 @@ plt4 <-
                                             label.position = "top",
                                             barheight = .5)
   ) +
+  geom_errorbar(aes(ymin = p25, ymax = p75), width = .45,
+                position = position_dodge(.9), colour = "gray50") +
   facet_grid(variable ~ dataset, scales = "free_y", labeller = label_parsed) +
   ggh4x::facetted_pos_scales(
     y = list(
-      variable == "italic(d[r])" ~ scale_y_continuous(limits = c(0.55, 0.7)),
-      variable == "italic(d[r]^{\n    p90\n})" ~ scale_y_continuous(limits = c(0.3, .45)),
-      variable == "italic(MCC)" ~  scale_y_continuous(limits = c(0.165, .35))
+      variable == "italic(d[r])" ~ scale_y_continuous(limits = c(0.55, 0.68)),
+      variable == "italic(d[r]^{\n    p90\n})" ~ scale_y_continuous(limits = c(0.35, .48)),
+      variable == "italic(MCC)" ~  scale_y_continuous(limits = c(0.165, .43), breaks = c(0.2, 0.3, 0.4))
     )
   ) +
   theme_bw() +
