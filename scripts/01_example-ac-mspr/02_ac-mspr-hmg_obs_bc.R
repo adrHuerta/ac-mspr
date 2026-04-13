@@ -115,6 +115,10 @@ exp_plot <- analogues_df
 exp_plot$date <- as.Date(exp_plot$date)
 exp_plot_label <- exp_plot[exp_plot$anlg %in% c("19", "41", "48"),]
 
+exp_plot$sat <- factor(exp_plot$sat, 
+                       levels = c("gsmap", "imerg", "pdirnow"),
+                       labels = c("GSMaP_NRT", "IMERG−Early", "PDIR−Now"))
+
 plot1 <- 
   ggplot(data = exp_plot) + 
   geom_density_ridges(aes(x = date, y = factor(sat), point_shape = factor(sat)),
@@ -126,12 +130,14 @@ plot1 <-
                       lwd = .375) +
   xlab("") + ylab("satellite products") +
   scale_x_date(limits = c(as.Date("1997-01-01"), as.Date("2022-12-31"))) +
+  scale_y_discrete(guide = guide_axis(n.dodge = 2)) +
   theme_bw() +
   theme(axis.text.y = element_text(angle = 90, vjust = 1, hjust=0.5),
         legend.margin = margin(t = -5),
         axis.text = element_text(size = 7.75),
         axis.title = element_text(size = 8.5),
         legend.title = element_text(size = 8),
+        axis.title.y =element_blank(),
         legend.text = element_text(size = 7),
         legend.key.size = unit(.35, 'cm'),
         plot.margin = margin(-15, 5, -15, 5),
@@ -141,7 +147,7 @@ plot1 <-
 plot2 <- 
   ggplot(data = exp_plot) + 
   geom_point(aes(x = mcc, y = dr_p90, colour = dr, shape = sat), size = 2.75, alpha = 0.8) + 
-  guides(shape = guide_legend(title = "satellite\nproducts")) +
+  guides(shape = "none") +
   viridis::scale_color_viridis(alpha = 0.8, latex2exp::TeX("\\textit{$d_{r}$}")) +
   xlab(latex2exp::TeX("\\textit{$MCC$}")) + ylab(latex2exp::TeX("\\textit{$d_{r}^{p90}$}")) +
   ggrepel::geom_text_repel(data = exp_plot_label, aes(label = anlg, x = mcc, y = dr_p90),
@@ -203,7 +209,7 @@ for(ijx in seq_len(nrow(analogues_df))){
       Covars =  c("PrSat", "PrSatB", "H", "T", "OPD", "P", "CF", "CWP",
                   "DSI", "DCI", "MDI", "FDI", "OPD_eff", "CWP_eff", "CF_gra"),
       Model = fillData_rf_ranger,
-      Mc.Cores = 150
+      Mc.Cores = 200
     )
   )
   
@@ -243,9 +249,13 @@ pr_new_df$value_cut <- cut(pr_new_df$value,
                                       20, 30, 50, 
                                       75, 100, 120, 140, Inf),
                            right = FALSE,
-                           labels = c("[0,0.1)", "[0.1,1)", "[1,5)", "[5,10)",
-                                      "[10,20)", "[20,30)", "[30,50)", "[50,75)",
-                                      "[75,100)", "[100,120)", "[120,140)", "[140, Max)"))
+                           labels = c("0 - .1", ".1 - 1", "1 - 5", "5 - 10",
+                                      "10 - 20", "20 - 30", "30 - 50", "50 - 75",
+                                      "75 - 100", "100 - 120", "120 - 140", "140 - Max")
+                           # labels = c("[0,0.1)", "[0.1,1)", "[1,5)", "[5,10)",
+                           #            "[10,20)", "[20,30)", "[30,50)", "[50,75)",
+                           #            "[75,100)", "[100,120)", "[120,140)", "[140, Max)")
+                           )
 
 colors <- c(
   "white","#f0f9e8", "#bae4bc", "#7bccc4", "#43a2ca",
@@ -266,10 +276,45 @@ pr_xyz_r_df$PrObs_cut <- cut(pr_xyz_r_df$PrObs,
 pr_xyz_r_df$PrObs_cut[pr_xyz_r_df$PrObs_cut == "[0,0.1)"] <- NA
 pr_xyz_r_df <- pr_xyz_r_df[complete.cases(pr_xyz_r_df), ]
 
+eco_centroids <- centroids(crop(ecoregions, ext(pr_box)), inside = TRUE)
+eco_centroids <- as.data.frame(eco_centroids, geom = "XY")
+eco_centroids[eco_centroids$nr_id == "GCH", c("x", "y")] <- c(-62.5, -22)
+eco_centroids[eco_centroids$nr_id == "EHL", c("x", "y")] <- c(-50, -14)
+eco_centroids[eco_centroids$nr_id == "AOL", c("x", "y")] <- c(-62, -1)
+
 plt0 <-
   ggplot() +
   tidyterra::geom_spatvector(data = ecoregions, fill = "white", size = .11) +
-  geom_point(data = pr_xyz_r_df, aes(x = LON, y = LAT, colour = PrObs_cut), size = .3) + 
+  ggrepel::geom_text_repel(
+    data = eco_centroids[eco_centroids$nr_id == "CAS", ],
+    aes(label = nr_id, x = x, y = y), size = 2, alpha = 0.65, box.padding = 0.01, nudge_y = -8, nudge_x = -4,
+    segment.alpha = 0.35, segment.curvature = -0.1, segment.linetype = 1, segment.size = .25, segment.colour = "gray50"
+  ) +
+  ggrepel::geom_text_repel(
+    data = eco_centroids[eco_centroids$nr_id == "PAD", ],
+    aes(label = nr_id, x = x, y = y), size = 2, alpha = 0.65, box.padding = 0.01, nudge_y = -5, nudge_x = -4,
+    segment.alpha = 0.35, segment.curvature = -0.1, segment.linetype = 1, segment.size = .25, segment.colour = "gray50"
+  ) +
+  ggrepel::geom_text_repel(
+    data = eco_centroids[eco_centroids$nr_id == "NAS", ],
+    aes(label = nr_id, x = x, y = y), size = 2, alpha = 0.65, box.padding = 0.01, nudge_y = 8.5, nudge_x = -3,
+    segment.alpha = 0.35, segment.curvature = -0.1, segment.linetype = 1, segment.size = .25, segment.colour = "gray50"
+  ) +
+  ggrepel::geom_text_repel(
+    data = eco_centroids[eco_centroids$nr_id == "GCH", ],
+    aes(label = nr_id, x = x, y = y), size = 2, alpha = 0.65, box.padding = 0, point.padding = 0, nudge_y = -.2, nudge_x = .1
+  ) +
+  ggrepel::geom_text_repel(
+    data = eco_centroids[eco_centroids$nr_id == "EHL", ],
+    aes(label = nr_id, x = x, y = y), size = 2, alpha = 0.65, box.padding = 0.01, nudge_y = 15, nudge_x = 10.5,
+    segment.alpha = 0.35, segment.curvature = -0.1, segment.linetype = 1, segment.size = .25, segment.colour = "gray50"
+  ) +
+  ggrepel::geom_text_repel(
+    data = eco_centroids[eco_centroids$nr_id == "AOL", ],
+    aes(label = nr_id, x = x, y = y), size = 2, alpha = 0.65, box.padding = 0.01, nudge_y = 11, nudge_x = 7,
+    segment.alpha = 0.35, segment.curvature = -0.1, segment.linetype = 1, segment.size = .25, segment.colour = "gray50"
+  ) +
+  geom_point(data = pr_xyz_r_df, aes(x = LON, y = LAT, colour = PrObs_cut), size = .1) + 
   scale_colour_manual(values = colors, name = "precipitation (mm)", drop = FALSE) +
   coord_sf(ylim = c(-25, 13), xlim = c(-82, -34), expand = c(0, 0)) +
   theme_bw() + xlab("") + ylab("") +
