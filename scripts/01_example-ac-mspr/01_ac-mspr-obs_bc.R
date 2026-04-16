@@ -227,9 +227,9 @@ pr_new_s <- rast(
 
 ecoregions <- vect("/scratch2/ahuerta/datasets/vector/sa_eco2/sa_eco_l3_2_paper.shp")
 
-pr_new_df <- pr_new_s[[which(exp_plot$anlg %in% c("13", "38", "35"))]]
+pr_new_df <- pr_new_s[[which(exp_plot$anlg %in% c("13", "35", "38"))]]
 pr_new_df <- c(pr_new_df, app(pr_new_s, median), app(pr_new_s, sd))
-names(pr_new_df) <- c("analogue-13", "analogue-38", "analogue-35", "analogue-median", "analogue-sd")
+names(pr_new_df) <- c("analogue-13", "analogue-35", "analogue-38", "analogue-median", "analogue-sd")
 
 pr_new_df_metric <- fast_dr_mcc_v(obs = matrix(pr_data_r, ncol = 1), mod_mat = extract(pr_new_df, pr_xyz_r))
 pr_new_df_metric$layer <- c("ID", names(pr_new_df) )
