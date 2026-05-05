@@ -32,7 +32,7 @@ for (yy in years) {
     dates_year,
     function(ijx){
       
-      year_folder  <- file.path("output", "05_prec4pe_hmg_obs_bc", format(ijx, "%Y"))
+      year_folder  <- file.path("output", "05_prec4pe/prec4pe_hmg_obs_bc", format(ijx, "%Y"))
       day_folder   <- file.path(year_folder, format(ijx, "%Y-%m-%d"))
       
       dir.create(day_folder, recursive = TRUE, showWarnings = FALSE)
