@@ -3,9 +3,9 @@ rm(list = ls())
 library(terra)
 library(xts)
 source("R/analogues/analogue_search_engine.R")
-source("R/spatial_data_fusion/spatial_data_fusion_engine_BF.R")
+source("R/spatial_data_fusion/spatial_data_fusion_engine.R")
 source("R/spatial_data_fusion/metrics.R")
-source("R/spatial_data_fusion/fill_grid.R")
+# source("R/spatial_data_fusion/fill_grid.R")
 terra::terraOptions(parallel = FALSE)
 library(ggplot2)
 library(ggridges)
@@ -77,7 +77,7 @@ analogues_df <- lapply(
     if(length(duplicated_dates) >= 1) {
       
       to_eval <- analogues_full[which(analogues_full$date %in% duplicated_dates), ]
-      
+
       to_add <- by(to_eval, to_eval$date,
                    function(jx){
                      
@@ -165,7 +165,7 @@ plot2 <-
 
 ##  1) SPATIAL DATA FUSION
 
-features_path = "/scratch2/ahuerta/patmosx_gf"
+features_path = "/mnt/climstor2/vol01_ecmwf/download/patmosx" # Non-gap-filled features!
 
 pr_xyz_r <- terra::vect(pr_xyz, geom = c("LON", "LAT"), crs = "+proj=longlat +datum=WGS84", keepgeom = TRUE)
 pr_xyz_r <- crop(pr_xyz_r, terra::ext(pr_box_1))
@@ -173,7 +173,7 @@ pr_data_r <- pr_data[date_to_merge, match(pr_xyz_r$ID, colnames(pr_data))]
 
 pr_new_data <- list()
 
-for(ijx in seq_len(nrow(analogues_df))[c(13, 35, 38)]){
+for(ijx in seq_len(nrow(analogues_df))){
   
   print(ijx)
   i_date <- analogues_df$date[ijx]
@@ -197,10 +197,10 @@ for(ijx in seq_len(nrow(analogues_df))[c(13, 35, 38)]){
   
   features_grid <- c(lla_grid, focal(features_dir, w = 5, fun = "mean", expand = TRUE)) # same as exploration
   features_grid <- crop(features_grid, terra::ext(pr_box_1)) # it creates son NA pixel not good for griddign
-  features_grid <- rast(lapply(features_grid, fill_na_iteratively))
+  features_grid <- subst(features_grid, NA, -999) 
   # features_grid <- terra::aggregate(features_grid, 10)
   
-  output_pr <- spatial_data_fusion_engine_BF(
+  output_pr <- spatial_data_fusion_engine(
     pr_xyz = pr_xyz_r,
     pr_data = pr_data_r,
     features_grid = features_grid,
@@ -209,8 +209,8 @@ for(ijx in seq_len(nrow(analogues_df))[c(13, 35, 38)]){
       Nstations = 60,
       Covars =  c("PrSat", "PrSatB", "H", "T", "OPD", "P", "CF", "CWP",
                   "DSI", "DCI", "MDI", "FDI", "OPD_eff", "CWP_eff", "CF_gra"),
-      Model = fillData_rf_ranger_f1,
-      Mc.Cores = 100
+      Model = fillData_rf_ranger,
+      Mc.Cores = 150
     )
   )
   
@@ -221,42 +221,42 @@ for(ijx in seq_len(nrow(analogues_df))[c(13, 35, 38)]){
 pr_new_s <- rast(
   lapply(
     pr_new_data,
-    function(x) x[[5]] # BF from reg_model
+    function(x) x[[1]]
   )
 )
 
 ecoregions <- vect("/scratch2/ahuerta/datasets/vector/sa_eco2/sa_eco_l3_2_paper.shp")
 
-pr_new_df <- pr_new_s[[which(exp_plot$anlg %in% c("01", "02", "03"))]] # it is no needed alll
-pr_new_df <- c(pr_new_df, pr_new_df[[1]], pr_new_df[[1]])
+pr_new_df <- pr_new_s[[which(exp_plot$anlg %in% c("13", "35", "38"))]]
+pr_new_df <- c(pr_new_df, app(pr_new_s, median), app(pr_new_s, sd))
 names(pr_new_df) <- c("analogue-13", "analogue-35", "analogue-38", "analogue-median", "analogue-sd")
 
-# pr_new_df_metric <- fast_dr_mcc_v(obs = matrix(pr_data_r, ncol = 1), mod_mat = extract(pr_new_df, pr_xyz_r))
-# pr_new_df_metric$layer <- c("ID", names(pr_new_df) )
-# pr_new_df_metric <- pr_new_df_metric[-c(1, 6), ]
-# colnames(pr_new_df_metric)[5] <- c("variable")
-# pr_new_df_metric$my_label <- with(pr_new_df_metric, paste0(
-#   "<i>d</i><sub><i>r</i></sub> : ", formatC(round(dr, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#"), "<br>",
-#   "<i>KGE''</i> : ", formatC(round(kge2, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#"), "<br>",
-#   "<i>MCC</i> : ", formatC(round(mcc, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#"), "<br>",
-#   "<i>BAcc</i> : ", formatC(round(bcc, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#")
-# ))
+pr_new_df_metric <- fast_dr_mcc_v(obs = matrix(pr_data_r, ncol = 1), mod_mat = extract(pr_new_df, pr_xyz_r))
+pr_new_df_metric$layer <- c("ID", names(pr_new_df) )
+pr_new_df_metric <- pr_new_df_metric[-c(1, 6), ]
+colnames(pr_new_df_metric)[5] <- c("variable")
+pr_new_df_metric$my_label <- with(pr_new_df_metric, paste0(
+  "<i>d</i><sub><i>r</i></sub> : ", formatC(round(dr, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#"), "<br>",
+  "<i>KGE''</i> : ", formatC(round(kge2, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#"), "<br>",
+  "<i>MCC</i> : ", formatC(round(mcc, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#"), "<br>",
+  "<i>BAcc</i> : ", formatC(round(bcc, 2), digits = 2, format = "fg", drop0trailing = FALSE, flag = "#")
+))
 
 pr_new_df <- mask(pr_new_df, ecoregions)
 pr_new_df <- as.data.frame(pr_new_df, xy = TRUE)
 pr_new_df <- reshape2::melt(pr_new_df, id.vars = c("x", "y"))
-# pr_new_df$value_cut <- cut(pr_new_df$value,
-#                            breaks = c(-Inf, 0.1, 1, 5, 10,
-#                                       20, 30, 50, 
-#                                       75, 100, 120, 140, Inf),
-#                            right = FALSE,
-#                            labels = c("0 - .1", ".1 - 1", "1 - 5", "5 - 10",
-#                                       "10 - 20", "20 - 30", "30 - 50", "50 - 75",
-#                                       "75 - 100", "100 - 120", "120 - 140", "140 - Max")
-#                            # labels = c("[0,0.1)", "[0.1,1)", "[1,5)", "[5,10)",
-#                            #            "[10,20)", "[20,30)", "[30,50)", "[50,75)",
-#                            #            "[75,100)", "[100,120)", "[120,140)", "[140, Max)")
-# )
+pr_new_df$value_cut <- cut(pr_new_df$value,
+                           breaks = c(-Inf, 0.1, 1, 5, 10,
+                                      20, 30, 50, 
+                                      75, 100, 120, 140, Inf),
+                           right = FALSE,
+                           labels = c("0 - .1", ".1 - 1", "1 - 5", "5 - 10",
+                                      "10 - 20", "20 - 30", "30 - 50", "50 - 75",
+                                      "75 - 100", "100 - 120", "120 - 140", "140 - Max")
+                           # labels = c("[0,0.1)", "[0.1,1)", "[1,5)", "[5,10)",
+                           #            "[10,20)", "[20,30)", "[30,50)", "[50,75)",
+                           #            "[75,100)", "[100,120)", "[120,140)", "[140, Max)")
+)
 
 colors <- c(
   "white","#f0f9e8", "#bae4bc", "#7bccc4", "#43a2ca",
@@ -330,9 +330,9 @@ plt0 <-
 
 plt3 <-
   ggplot() +
-  geom_raster(data = pr_new_df[complete.cases(pr_new_df),], aes(x = x, y = y, fill = value)) + 
+  geom_raster(data = pr_new_df, aes(x = x, y = y, fill = value_cut)) + 
   tidyterra::geom_spatvector(data = ecoregions, fill = NA, size = .11) +
-  scale_fill_discrete(palette = topo.colors(16), name = "features", drop = TRUE) +
+  scale_fill_discrete(palette = colors, name = "precipitation (mm)", drop = FALSE) +
   coord_sf(ylim = c(-25, 13), xlim = c(-82, -34), expand = c(0, 0)) +
   theme_bw() +
   theme(plot.tag = element_text(size = 10),
@@ -349,7 +349,17 @@ plt3 <-
         legend.key.size = unit(0.01, "npc"),
         legend.background = element_blank()) +
   guides(fill = guide_legend(title.position = "top", title.hjust = 0.5, ncol = 3)) +
-  facet_wrap( ~ variable, ncol = 3, drop = FALSE) 
+  facet_wrap( ~ variable, ncol = 3, drop = FALSE) +
+  ggtext::geom_richtext(
+    data = pr_new_df_metric,
+    aes(x = -34.8, y = 7, label = my_label),
+    fill = "white", 
+    color = "gray50",
+    label.padding = unit(0.5, "mm"),
+    label.size = 0.01,
+    label.color = NA,
+    hjust = 1,
+    size = 2.5)
 
 
 ((plt0 | plot1 | plot2) / lemon::reposition_legend(plt3,
@@ -363,7 +373,7 @@ plt3 <-
   )
 
 ggsave(
-  "output/01_example-ac-mspr/exp-BF-obs_bc.pdf",
+  "output/01_example-ac-mspr/exp-obs_bc_NGF.pdf",
   units = "in",
   width = 6,
   height = 7,
