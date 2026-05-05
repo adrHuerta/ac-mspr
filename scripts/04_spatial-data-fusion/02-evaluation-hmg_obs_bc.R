@@ -3,6 +3,7 @@ rm(list = ls())
 library(terra)
 library(xts)
 source("R/spatial_data_fusion/spatial_data_fusion_engine_CV.R")
+source("R/spatial_data_fusion/fill_grid.R")
 
 pr_box = c(-83, -34, -25, 15)
 pr_box_1 = c(-83, -34, -25 - .5, 15 + .5)
@@ -49,8 +50,9 @@ for(date_to_merge in cv_days$dates){
       features_dir, format(as.Date(analogue_date_i), "%Y"),
       paste0(analogue_date_i, ".nc"))
   )
-  features_grid <- focal(features_dir, w = 5, fun = "mean", expand = TRUE, na.policy = "only", na.rm=FALSE)
+  features_grid <- focal(features_dir, w = 5, fun = "mean")
   features_grid <- crop(features_grid, terra::ext(pr_box_1))
+  features_grid <- rast(lapply(features_grid, fill_na_iteratively))
   
   
   output_cv <- spatial_data_fusion_engine_CV(

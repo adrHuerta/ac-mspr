@@ -3,6 +3,7 @@ rm(list = ls())
 library(terra)
 library(xts)
 source("R/spatial_data_fusion/spatial_data_fusion_engine_CV.R")
+source("R/spatial_data_fusion/fill_grid.R")
 
 pr_box = c(-83, -34, -25, 15)
 pr_box_1 = c(-83, -34, -25 - .5, 15 + .5)
@@ -20,31 +21,6 @@ wts_data$time <- as.Date(wts_data$time)
 cv_days <- read.csv("output/02_ENSO-cv-sample-days/CV_days.csv")
 
 features_path = "/scratch2/ahuerta/patmosx_gf"
-
-fill_na_iteratively <- function(raster_object, window_size = 3) {
-  # Keep looping until there are no more NA pixels
-  repeat {
-    # Count the number of NA pixels before filling
-    na_count_before <- sum(is.na(terra::values(raster_object)), na.rm = TRUE)
-    
-    # Fill missing pixels using the focal function
-    raster_object[is.na(raster_object)] <- focal(raster_object, 
-                                                 w = matrix(1, window_size, window_size), 
-                                                 fun = mean, na.rm = TRUE)[is.na(raster_object)]
-    
-    # Count the number of NA pixels after filling
-    na_count_after <- sum(is.na(terra::values(raster_object)), na.rm = TRUE)
-    
-    # If no NA pixels were filled in this iteration, exit the loop
-    if (na_count_after == na_count_before) {
-      break
-    }
-  }
-  
-  return(raster_object)
-}
-
-
 
 for(date_to_merge in cv_days$dates){
   
@@ -74,12 +50,12 @@ for(date_to_merge in cv_days$dates){
       features_dir, format(as.Date(analogue_date_i), "%Y"),
       paste0(analogue_date_i, ".nc"))
   )
-  features_grid <- focal(features_dir, w = 3, fun = "mean", expand = TRUE) # same as exploration
-  features_grid <- crop(features_grid, terra::ext(pr_box_1)) # it creates son NA pixel not good for griddign
+  # features_grid <- focal(features_dir, w = 3, fun = "mean", expand = TRUE) # same as exploration
+  # features_grid <- crop(features_grid, terra::ext(pr_box_1)) # it creates son NA pixel not good for griddign
   
-  # features_grid <- focal(features_dir, w = 5, mean) # for 0.1°
-  # features_grid <- crop(features_grid, terra::ext(pr_box_1))
-  # features_grid <- rast(lapply(features_grid, fill_na_iteratively))
+  features_grid <- focal(features_dir, w = 5, mean) # for 0.1°
+  features_grid <- crop(features_grid, terra::ext(pr_box_1))
+  features_grid <- rast(lapply(features_grid, fill_na_iteratively))
   
   output_cv <- spatial_data_fusion_engine_CV(
     pr_xyz = pr_xyz_r,

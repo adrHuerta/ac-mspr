@@ -17,7 +17,7 @@ pr_xyz <- crop(pr_xyz, terra::ext(pr_box))
 
 cv_days <- read.csv("output/02_ENSO-cv-sample-days/CV_days.csv")
 
-# cv output files
+# cv output files # same results!
 obs_bc_f <- dir("~/repos/exploration/prototypes/2026-02-13_merging-redo-02/output/obs_bc/cv", full.names = TRUE, recursive = TRUE)
 hmg_obs_bc_f <- dir("~/repos/exploration/prototypes/2026-02-13_merging-redo-02/output/hmg_obs_bc/cv", full.names = TRUE, recursive = TRUE)
 qc_obs_f <- dir("~/repos/exploration/prototypes/2026-02-13_merging-redo-02/output/qc_obs/cv", full.names = TRUE, recursive = TRUE)
