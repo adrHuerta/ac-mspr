@@ -52,7 +52,7 @@ jaccard_per_day <- rbind(
       seq_along(obs_bc_anlg), function(i) {
         jaccard_index(obs_bc_anlg[[i]]$date, hmg_obs_bc_anlg[[i]]$date)
         }),
-    dataset = "obs_bc|hmg_obs_bc",
+    dataset = "obs_bc | hmg_obs_bc",
     enso = cv_days$type),
   
   data.frame(
@@ -60,7 +60,7 @@ jaccard_per_day <- rbind(
       seq_along(obs_bc_anlg), function(i) {
         jaccard_index(hmg_obs_bc_anlg[[i]]$date, qc_obs_anlg[[i]]$date)
       }),
-    dataset = "hmg_obs_bc|qc_obs",
+    dataset = "hmg_obs_bc | qc_obs",
     enso = cv_days$type),
   
   data.frame(
@@ -68,13 +68,13 @@ jaccard_per_day <- rbind(
       seq_along(obs_bc_anlg), function(i) {
         jaccard_index(qc_obs_anlg[[i]]$date, obs_bc_anlg[[i]]$date)
       }),
-    dataset = "qc_obs|obs_bc",
+    dataset = "qc_obs | obs_bc",
     enso = cv_days$type)
 )
 
-jaccard_per_day$dataset <- factor(jaccard_per_day$dataset, levels = c("obs_bc|hmg_obs_bc",
-                                                                      "hmg_obs_bc|qc_obs",
-                                                                      "qc_obs|obs_bc"))
+jaccard_per_day$dataset <- factor(jaccard_per_day$dataset, levels = c("obs_bc | hmg_obs_bc",
+                                                                      "hmg_obs_bc | qc_obs",
+                                                                      "qc_obs | obs_bc"))
 # jaccard_per_day$enso <- factor(jaccard_per_day$enso)
 jaccard_per_day$enso <- factor(jaccard_per_day$enso,
                             levels = c("C_Neutral", "C_Nina", "C_Nino", "E_Neutral", "E_Nina", "E_Nino"),
