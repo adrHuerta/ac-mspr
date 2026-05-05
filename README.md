@@ -4,6 +4,8 @@
 
 AC-MSPR is provided as a collection of R scripts. Step-by-step scripts for implementing and applying are provided in the script directory.
 
+## Example
+
 <p align="center">
 
 <img src="./test/ac-mspr_exp-obs_bc.png"/>
