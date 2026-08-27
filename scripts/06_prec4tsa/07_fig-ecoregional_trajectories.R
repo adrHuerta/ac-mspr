@@ -234,8 +234,8 @@ ggplot(data = plot_df, aes(x = year)) +
                      labels = function(x) paste0("'", sub("^\\d{2}", "", as.character(x)))) +
   theme_bw() +
   theme(
-    panel.border = element_rect(color = "grey50", fill = NA, linewidth = 0.3),
-    axis.text = element_text(color = "grey45", size = 7.5),
+    panel.border = element_rect(color = "grey20", fill = NA, linewidth = 0.3),
+    axis.text = element_text(color = "grey20", size = 7.5),
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
     axis.ticks = element_blank(),
@@ -243,7 +243,7 @@ ggplot(data = plot_df, aes(x = year)) +
     axis.text.x = element_text(margin = margin(t = 2, r = 0, b = 0, l = 0)),
     axis.text.y = element_text(margin = margin(t = 0, r = 2, b = 0, l = 0)),
     strip.placement = "outside",
-    strip.text.y.left = element_text(angle = 0, hjust = 1),
+    strip.text.y.left = element_text(angle = 90, hjust = 0.5),
     strip.background = element_blank() 
   ) +
   xlab("") + ylab("")
@@ -252,5 +252,5 @@ ggsave(
   "output/enhanced_paper/fig_ecr_mean.pdf",
   width = 8.45, height = 7, device = "pdf",
   dpi = 500,
-  scale = .85
+  scale = .75
 )

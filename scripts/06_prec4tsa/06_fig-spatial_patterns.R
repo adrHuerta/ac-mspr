@@ -56,9 +56,9 @@ generate_split_legend_map_v1 <- function(data,
           legend.position.inside = c(0.125, 0.15), 
           legend.justification = c(0, 0),
           legend.title = element_blank(),                  
-          legend.text = element_text(size = 2.75, margin = margin(l = 2)),            
+          legend.text = element_text(size = 2.5, margin = margin(l = 2)),            
           legend.key.size = unit(0.08, "cm"),
-          legend.key.width = unit(0.05, "cm"),              
+          legend.key.width = unit(0.03, "cm"),              
           legend.spacing.y = unit(0.1, "cm"),     
           legend.spacing.x = unit(-15, "cm"),        
           legend.background = element_blank(),             
@@ -84,9 +84,9 @@ generate_split_legend_map_v1 <- function(data,
           legend.position.inside = c(0.85, 0.8), 
           legend.justification = c(1, 1),
           legend.title = element_blank(),                  
-          legend.text = element_text(size = 2.75, margin = margin(l = 2)),            
+          legend.text = element_text(size = 2.5, margin = margin(l = 2)),            
           legend.key.size = unit(0.08, "cm"),
-          legend.key.width = unit(0.05, "cm"),              
+          legend.key.width = unit(0.03, "cm"),              
           legend.spacing.y = unit(0.1, "cm"),     
           legend.spacing.x = unit(-15, "cm"),            
           legend.background = element_blank(),             
@@ -109,7 +109,7 @@ generate_split_legend_map_v1 <- function(data,
       plot.margin = unit(c(0, 0, 0, 0), "cm"),             
       panel.spacing = unit(c(0, 0, 0, 0), "cm"),
       panel.grid.minor = element_line(size = 0.01), panel.grid.major = element_line(size = 0.01),
-      panel.border = element_rect(color = "grey50", fill = NA, linewidth = 0.01)
+      panel.border = element_rect(color = "grey20", fill = NA, linewidth = 0.01)
     )
   
   return(m_plot)
@@ -130,10 +130,10 @@ theme_plt <-
     plot.margin = margin(0, 0, 0, 0, "pt"),
     legend.key.spacing.x = unit(-5, "cm"),
     legend.spacing.x = unit(-5, "cm"),
-    legend.text = element_text(size = 4, margin = margin(l = 2)),
+    legend.text = element_text(size = 2.5, margin = margin(l = 2)),
     legend.background = element_blank(),
     panel.grid.minor = element_line(size = 0.01), panel.grid.major = element_line(size = 0.01),
-    panel.border = element_rect(color = "grey50", fill = NA, linewidth = 0.01)
+    panel.border = element_rect(color = "grey20", fill = NA, linewidth = 0.01)
   )
 
 
@@ -151,10 +151,10 @@ theme_plt_r <-
     plot.margin = margin(0, 0, 0, 0, "pt"),
     legend.key.spacing.x = unit(-5, "cm"),
     legend.spacing.x = unit(-5, "cm"),
-    legend.text = element_text(size = 4, margin = margin(l = 2)),
+    legend.text = element_text(size = 2.5, margin = margin(l = 2)),
     legend.background = element_blank(),
     panel.grid.minor = element_line(size = 0.01), panel.grid.major = element_line(size = 0.01),
-    panel.border = element_rect(color = "grey50", fill = NA, linewidth = 0.01)
+    panel.border = element_rect(color = "grey20", fill = NA, linewidth = 0.01)
   )
 
 
@@ -200,7 +200,8 @@ m_prcptot <- generate_split_legend_map_v1(data = extInd_concat_MEAN_df,
                                           palette_name = "Spectral") +
   xlab("PRCPTOT") + ylab("a) mean (obs_bc)") +
   scale_x_discrete(position = "left") +
-  theme(axis.title = element_text(size = 5.25)) +
+  theme(axis.title.x = element_text(size = 5.25),
+        axis.title.y = element_text(size = 4.45)) +
   theme(axis.text=element_blank(),
         axis.ticks=element_blank()) +
   theme(plot.margin = margin(0, 0, 0, 0, "pt"))
@@ -300,7 +301,7 @@ t_prcptot <- generate_split_legend_map_v1(data = extInd_concat_SEN_df,
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   theme(legend.position="none")  +
-  theme(axis.title = element_text(size = 5.25)) +
+  theme(axis.title = element_text(size = 4.45)) +
   theme(plot.margin = margin(0, 0, 0, 0, "pt"))
 
 t_r1mm <- generate_split_legend_map_v1(data = extInd_concat_SEN_df,
@@ -391,7 +392,7 @@ t_prcptot_hmg <- generate_split_legend_map_v1(data = extInd_concat_SEN_df,
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   theme(legend.position="none")  +
-  theme(axis.title = element_text(size = 5.25)) +
+  theme(axis.title = element_text(size = 4.45)) +
   theme(plot.margin = margin(0, 0, 0, 0, "pt"))
 
 t_r1mm_hmg <- generate_split_legend_map_v1(data = extInd_concat_SEN_df,
@@ -451,10 +452,10 @@ aT_prcptot <- ggplot(data = agrrTrend_concat_df) +
   theme(legend.position="none") +
   xlab("") + ylab("d) trend agreement")  +
   theme(axis.title.x=element_blank(),
-        axis.title.y=element_text(size = 5.25),
+        axis.title.y=element_text(size = 4.45),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank())
-  
+
 aT_r1mm <- ggplot(data = agrrTrend_concat_df) + 
   geom_raster(aes(x = x, y = y, fill = factor(r1mm_1)), show.legend = TRUE) + 
   scale_fill_discrete(palette = c("-1" = "#DE77AE", "0" = "#F7F7F7", "1" = "#7FBC41"),
@@ -484,7 +485,7 @@ aT_p95 <- ggplot(data = agrrTrend_concat_df) +
   guides(fill = guide_legend(reverse = TRUE)) +
   theme_bw() + 
   theme_plt_r +
-  theme(legend.position = c(0.06, 0.285))  +
+  theme(legend.position = c(0.06, 0.31))  +
   theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
@@ -525,13 +526,13 @@ aT_cwd <- ggplot(data = agrrTrend_concat_df) +
 #########################################################
 
 ((m_prcptot / t_prcptot / t_prcptot_hmg / aT_prcptot) | 
-    (m_r1mm / t_r1mm / t_r1mm_hmg / aT_r1mm) |
-    (m_p95 / t_p95 / t_p95_hmg / aT_p95) |
-    (m_cdd / t_cdd / t_cdd_hmg / aT_cdd) | 
-    (m_cwd / t_cwd / t_cwd_hmg / aT_cwd)) &
+   (m_r1mm / t_r1mm / t_r1mm_hmg / aT_r1mm) |
+   (m_p95 / t_p95 / t_p95_hmg / aT_p95) |
+   (m_cdd / t_cdd / t_cdd_hmg / aT_cdd) | 
+   (m_cwd / t_cwd / t_cwd_hmg / aT_cwd)) &
   # plot_annotation(tag_levels = "a", tag_suffix = ")") &
   theme(plot.tag.position = c(0.05, 0.95),
-        plot.tag = element_text(size = 4.5))
+        plot.tag = element_text(size = 4.25))
 
 #########################################################
 # final plot 
@@ -540,6 +541,6 @@ ggsave(
   "output/enhanced_paper/fig_prec4tsa_mt.pdf",
   width = 5, height = 5.45, device = "pdf",
   dpi = 500,
-  scale = 1
+  scale = 0.75
 )
 
