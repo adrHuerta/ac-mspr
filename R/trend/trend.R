@@ -21,3 +21,15 @@ trend_agreement <- function(x, x_p, y, y_p) {
   
   return(c("aggr" = as.numeric(res), "sig" = as.numeric(res_p)))
 }
+
+trend_agreement_l <- function(x, x_p, y, y_p) {
+  res <- ifelse(x > 0 & y > 0, 1, 
+                ifelse(x < 0 & y < 0, -1, 0))
+  res[is.na(x) | is.na(y)] <- NA
+  
+  res_p <- ifelse(x_p < 0.05 & y_p < 0.05, 1, 0)
+  res_p[is.na(x_p) | is.na(x_p)] <- 0
+  res_p <- ifelse(res == 1 | res == -1, res_p, 0)
+  
+  return(list("aggr" = as.numeric(res), "sig" = as.numeric(res_p)))
+}

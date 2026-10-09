@@ -15,7 +15,7 @@ master_template <- rast("/mnt/climstor2/vol01_ecmwf/06_prec4tsa/prec4tsa_obs_bc/
 
 path_data <- "/mnt/climstor2/vol01_ecmwf/06_prec4tsa/prec4tsa_obs_bc/"
 year_range <- seq(1960, 2015, 1)
-hydro_year_range <- 1961:2015
+hydro_year_range <- 1960:2015
 
 ############################################
 
@@ -32,9 +32,15 @@ extInd_packed <- parallel::mclapply(
     
     dates <- seq(
       as.Date(paste0(hy - 1, "-11-01")),
-      as.Date(paste0(hy, "-04-30")),
+      as.Date(paste0(hy, "-10-31")), # as.Date(paste0(hy, "-04-30")),
       by = "day"
     )
+    
+    # dates <- seq(
+    #   as.Date(paste0(hy, "-01-01")),
+    #   as.Date(paste0(hy, "-12-31")),
+    #   by = "day"
+    # )
     
     # ---------------------------------------------------------
     # Construct daily folder paths
@@ -193,7 +199,7 @@ writeCDF(
 
 path_data <- "/mnt/climstor2/vol01_ecmwf/06_prec4tsa/prec4tsa_hmg_obs_bc/"
 year_range <- seq(1960, 2015, 1)
-hydro_year_range <- 1961:2015
+hydro_year_range <- 1960:2015
 
 #############################################
 
@@ -210,9 +216,15 @@ extInd_packed <- parallel::mclapply(
     
     dates <- seq(
       as.Date(paste0(hy - 1, "-11-01")),
-      as.Date(paste0(hy, "-04-30")),
+      as.Date(paste0(hy, "-10-31")), # as.Date(paste0(hy, "-04-30")),
       by = "day"
     )
+    
+    # dates <- seq(
+    #   as.Date(paste0(hy, "-01-01")),
+    #   as.Date(paste0(hy, "-12-31")),
+    #   by = "day"
+    # )
     
     # ---------------------------------------------------------
     # Construct daily folder paths

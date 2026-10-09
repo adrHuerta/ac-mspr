@@ -164,7 +164,7 @@ sehl <- ext(-52.896869822854633, -44.623739027568519, -26.195325542570956, -17.8
 pltt1 <- 
   ggplot() +
   tidyterra::geom_spatraster(data = trim(trend_agg),
-                             ) +
+  ) +
   scale_fill_gradientn(
     colors = c("white", "yellow", "#DE2D26", "#DE2D26"),
     na.value = NA,
@@ -216,7 +216,7 @@ pltt1 <-
   annotate(geom = "rect", 
            xmin = northeast_region[1], xmax = northeast_region[2], 
            ymin = northeast_region[3], ymax = northeast_region[4],
-           fill = NA, alpha = 0.2, color = "orange") +
+           fill = NA, alpha = 0.2, color = "red") +
   annotate(geom = "text", 
            x = (sum(northeast_region[1:2])) / 2,
            y = (sum(northeast_region[3:4])) / 2,
@@ -227,7 +227,7 @@ pltt1 <-
   annotate(geom = "rect", 
            xmin = sehl[1], xmax = sehl[2], 
            ymin = sehl[3], ymax = sehl[4],
-           fill = NA, alpha = 0.2, color = "red") +
+           fill = NA, alpha = 0.2, color = "orange") +
   annotate(geom = "text", 
            x = (sum(sehl[1:2])) / 2,
            y = (sum(sehl[3:4])) / 2,

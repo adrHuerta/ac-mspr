@@ -80,7 +80,7 @@ for(ecr in main_ecr)
     ext_ind,
     function(x){
       
-      data.frame(year = 1961:2015,
+      data.frame(year = 1960:2015,
                  var = x,
                  ecoregion = ecr,
                  dataset = "obs_bc",
@@ -99,7 +99,7 @@ for(ecr in main_ecr)
     ext_ind,
     function(x){
       
-      data.frame(year = 1961:2015,
+      data.frame(year = 1960:2015,
                  var = x,
                  ecoregion = ecr,
                  dataset = "hmg_obs_bc",
